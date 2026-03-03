@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from 'expo-router'
 
 type CardProps = {
   title: string;
@@ -35,6 +36,7 @@ const Card: React.FC<CardProps> = ({
 };
 
 export default function Dashboard() {
+  const router = useRouter()
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -51,7 +53,7 @@ export default function Dashboard() {
           title="Parent-Student Assignment"
           description="Link students to their respective parent accounts securely."
           buttonText="Manage Assignment"
-          onPress={() => console.log("Manage Assignment")}
+          onPress={() => router.push('/parents-status')}
         />
 
         <Card
