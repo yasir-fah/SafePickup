@@ -1,16 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
   Dimensions,
   FlatList,
-  Platform,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -69,16 +71,19 @@ const SAMPLE_DATA = [
 
 export default function ParentsLinkingHub() {
   const router = useRouter();
+
   const renderRow = ({ item, index }: { item: any; index: number }) => {
-    const rowTint = index % 2 === 0 ? styles.rowEven : null;
+    const backgroundColor =
+      index % 2 === 0 ? "#ffffff" : index % 2 === 1 ? "#fcfcfc" : "#f7f7f7";
+
     return (
-      <View style={[styles.row, rowTint]}>
+      <View style={[styles.row, { backgroundColor }]}>
         <View style={[styles.cell, styles.nameCell]}>
           <Text style={styles.nameText}>{item.name}</Text>
         </View>
 
         <View style={[styles.cell, styles.centerCell]}>
-          <Text style={[styles.nidText]}>{item.nid}</Text>
+          <Text style={styles.normalText}>{item.nid}</Text>
         </View>
 
         <View style={[styles.cell, styles.centerCell]}>
@@ -86,11 +91,18 @@ export default function ParentsLinkingHub() {
         </View>
 
         <View style={[styles.cell, styles.centerCell]}>
-          <Text style={styles.statusText}>{item.status}</Text>
+          <Text
+            style={[
+              styles.statusBadge,
+              item.status === "approved" ? styles.approved : styles.pending,
+            ]}
+          >
+            {item.status}
+          </Text>
         </View>
 
         <View style={[styles.cell, styles.actionsCell]}>
-          <View style={styles.actionsRow}>
+          <View style={styles.actionsColumn}>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() =>
@@ -101,11 +113,11 @@ export default function ParentsLinkingHub() {
             >
               <Text style={styles.actionBtnText}>Link</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={[styles.actionBtn, styles.actionBtnMargin]}
-              onPress={() => {}}
+              style={[styles.actionBtn, styles.actionBtnSpacing]}
             >
-              <Text style={styles.actionBtnText}>history</Text>
+              <Text style={styles.actionBtnText}>History</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -114,86 +126,88 @@ export default function ParentsLinkingHub() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <LinearGradient
+      colors={["#0E6B3B", "#0A4F2A", "#041E12"]}
+      style={{ flex: 1 }}
+    >
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push("/dashboard")}>
-          <Ionicons name="arrow-back" size={28} color="#fff" />
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.push("/dashboard")}
+        >
+          <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}></Text>
-        <View style={{ width: 28 }} />
+
+        <Text style={styles.headerTitle}>Parents Assignment</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.screen}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Available Parents</Text>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" />
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View
-              style={[
-                styles.table,
-                { minWidth: Math.max(SCREEN_WIDTH - 48, 800) },
-              ]}
-            >
-              <View style={styles.headerRow}>
-                <View style={[styles.headerCell, styles.nameCell]}>
-                  <Text style={styles.headerText}>NAME</Text>
+        <ScrollView contentContainerStyle={styles.screen}>
+          <BlurView intensity={60} tint="light" style={styles.card}>
+            <Text style={styles.title}>Available Parents</Text>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View
+                style={[
+                  styles.table,
+                  { minWidth: Math.max(SCREEN_WIDTH - 48, 900) },
+                ]}
+              >
+                {/* Header Row */}
+                <View style={styles.headerRow}>
+                  <View style={[styles.cell, styles.nameCell]}>
+                    <Text style={styles.tableHeaderText}>NAME</Text>
+                  </View>
+
+                  <View style={[styles.cell, styles.centerCell]}>
+                    <Text style={styles.tableHeaderText}>NATIONAL ID</Text>
+                  </View>
+
+                  <View style={[styles.cell, styles.centerCell]}>
+                    <Text style={styles.tableHeaderText}>PHONE</Text>
+                  </View>
+
+                  <View style={[styles.cell, styles.centerCell]}>
+                    <Text style={styles.tableHeaderText}>STATUS</Text>
+                  </View>
+
+                  <View style={[styles.cell, styles.actionsCell]}>
+                    <Text style={styles.tableHeaderText}>ACTIONS</Text>
+                  </View>
                 </View>
 
-                <View style={[styles.headerCell, styles.centerCell]}>
-                  <Text style={styles.headerText}>NATIONAL ID</Text>
-                </View>
-
-                <View style={[styles.headerCell, styles.centerCell]}>
-                  <Text style={styles.headerText}>PHONE</Text>
-                </View>
-
-                <View style={[styles.headerCell, styles.centerCell]}>
-                  <Text style={styles.headerText}>STATUS</Text>
-                </View>
-
-                <View style={[styles.headerCell, styles.actionsCell]}>
-                  <Text style={styles.headerText}>ACTIONS</Text>
-                </View>
+                <FlatList
+                  data={SAMPLE_DATA}
+                  keyExtractor={(i) => i.id}
+                  renderItem={renderRow}
+                  showsVerticalScrollIndicator={false}
+                  style={styles.list}
+                />
               </View>
-
-              <FlatList
-                data={SAMPLE_DATA}
-                keyExtractor={(i) => i.id}
-                renderItem={renderRow}
-                showsVerticalScrollIndicator={false}
-                style={styles.list}
-              />
-            </View>
-          </ScrollView>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            </ScrollView>
+          </BlurView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#f0f0f0" },
-  screen: { alignItems: "center", paddingVertical: 24 },
-  card: {
-    width: "92%",
-    borderRadius: 16,
-    backgroundColor: "#ffffff",
-    padding: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+  screen: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
-  title: { fontSize: 20, fontWeight: "700", color: "#000", marginBottom: 12 },
 
   header: {
+    marginTop: 40,
+    marginBottom: 10,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-    backgroundColor: "#0E6B3B",
+    justifyContent: "center",
+    height: 50,
   },
 
   headerTitle: {
@@ -202,47 +216,104 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+  backButton: {
+    position: "absolute",
+    left: 20,
+  },
+
+  card: {
+    borderRadius: 28,
+    padding: 20,
+    backgroundColor: "#ffffff",
+    overflow: "hidden",
+    elevation: 6,
+  },
+
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#0E6B3B",
+    marginBottom: 18,
+  },
+
   table: { flexDirection: "column" },
-  headerRow: { flexDirection: "row", paddingVertical: 8, alignItems: "center" },
-  headerCell: { paddingHorizontal: 8, justifyContent: "center" },
-  headerText: {
+
+  headerRow: {
+    flexDirection: "row",
+    paddingVertical: 10,
+  },
+
+  tableHeaderText: {
     fontSize: 12,
-    color: "#9e9e9e",
+    color: "#757575",
     textTransform: "uppercase",
     fontWeight: "600",
   },
 
-  list: { maxHeight: 360 },
+  list: { maxHeight: 420 },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "#eeeeee",
   },
-  rowEven: { backgroundColor: "#fafafa" },
 
-  cell: { paddingHorizontal: 8, justifyContent: "center" },
-  nameCell: { flex: 2, alignItems: "flex-start" },
+  rowEven: {
+    backgroundColor: "#fafafa",
+  },
+
+  cell: {
+    paddingHorizontal: 8,
+    justifyContent: "center",
+  },
+
+  nameCell: { flex: 2 },
   centerCell: { flex: 1, alignItems: "center" },
-  actionsCell: { flex: 1.6, alignItems: "center" },
+  actionsCell: { flex: 1.6 },
 
   nameText: { fontSize: 14, color: "#111" },
   normalText: { fontSize: 13, color: "#333" },
-  nidText: {
-    fontSize: 13,
-    color: "#333",
-    fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
-  },
-  statusText: { fontSize: 13, color: "#616161" },
 
-  actionsRow: { flexDirection: "row", alignItems: "center" },
-  actionBtn: {
-    backgroundColor: "#2e7d32",
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: "600",
   },
-  actionBtnMargin: { marginLeft: 8 },
-  actionBtnText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+
+  approved: {
+    backgroundColor: "#e8f5e9",
+    color: "#2e7d32",
+  },
+
+  pending: {
+    backgroundColor: "#fff3e0",
+    color: "#ef6c00",
+  },
+
+  actionsColumn: {
+    flexDirection: "column",
+    alignItems: "center",
+  },
+
+  actionBtn: {
+    width: "100%",
+    backgroundColor: "#0E6B3B",
+    borderRadius: 12,
+    paddingVertical: 6,
+    alignItems: "center",
+  },
+
+  actionBtnSpacing: {
+    marginTop: 8,
+  },
+
+  actionBtnText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+  },
 });
