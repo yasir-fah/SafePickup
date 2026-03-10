@@ -21,10 +21,6 @@ type Student = {
 export default function PickupRequest() {
   const router = useRouter();
 
-  const SCHOOL_LAT = 24.707;
-  const SCHOOL_LON = 46.683;
-  const MAX_DISTANCE = 200;
-
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
@@ -34,32 +30,6 @@ export default function PickupRequest() {
     { id: "3", name: "Yasir Alateeq", status: "REJECTED" },
     { id: "4", name: "Yaser Alrashid", status: "REJECTED" },
   ]);
-
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ) => {
-    const R = 6371e3;
-
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) *
-        Math.cos(φ2) *
-        Math.sin(Δλ / 2) *
-        Math.sin(Δλ / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
-  };
 
   const handlePickup = async (id: string) => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -74,18 +44,14 @@ export default function PickupRequest() {
     const userLat = location.coords.latitude;
     const userLon = location.coords.longitude;
 
-    const distance = calculateDistance(
-      userLat,
-      userLon,
-      SCHOOL_LAT,
-      SCHOOL_LON
-    );
+    console.log("lat: "+ userLat +"and lon: "+ userLon)
 
-    if (distance > MAX_DISTANCE) {
-      setModalMessage("You must be near the school pickup zone.");
-      setModalVisible(true);
-      return;
-    }
+    /* todo: send http request: 
+     * {
+          parentLat: userLat,
+          parentLon: userLon
+        }
+    */
 
     setStudents((prev) =>
       prev.map((s) =>
