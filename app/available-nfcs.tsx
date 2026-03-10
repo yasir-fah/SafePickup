@@ -35,14 +35,10 @@ const AvailableNFCs = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => router.push("/dashboard")}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Available NFC Cards</Text>
-
-        <View style={{ width: 40 }} />
       </View>
 
       <View style={styles.screen}>
@@ -125,14 +121,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    marginTop: 60,
+
   },
 
   backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    marginHorizontal: 8,
   },
 
   headerTitle: {

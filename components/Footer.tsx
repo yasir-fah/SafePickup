@@ -1,29 +1,31 @@
+import { router } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function Footer() {
+  const goAbout = () => {
+    router.push("/about");
+  };
+
   return (
     <View style={styles.footer}>
       
-      {/* Vision 2030 Logo */}
-    
-
       {/* Links */}
       <View style={styles.links}>
-        <TouchableOpacity  // onPress={() => router.push("/contact")} -------we will add later 
-        >
+        <TouchableOpacity>
           <Text style={styles.link}>Contact Us</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity   // onPress={() => router.push("/terms")} -------we will add later 
-        >
+        <TouchableOpacity>
           <Text style={styles.link}>Terms and Conditions</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity  // onPress={() => router.push("/policy")} -------we will add later  
-        
-        >
+        <TouchableOpacity>
           <Text style={styles.link}>Policy</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={goAbout}>
+          <Text style={styles.link}>About</Text>
         </TouchableOpacity>
       </View>
 
@@ -33,26 +35,22 @@ export default function Footer() {
 
 const styles = StyleSheet.create({
   footer: {
-    backgroundColor: "#0E6B3B",
     paddingVertical: 18,
     paddingHorizontal: 20,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  logo: {
-    width: 110,
-    height: 40,
+    justifyContent: "center",
+    marginBottom: 20,
   },
 
   links: {
     flexDirection: "row",
-    gap: 25,
+    gap: 20,
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
 
   link: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 12,
     fontWeight: "600",
   },

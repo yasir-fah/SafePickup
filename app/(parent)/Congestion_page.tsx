@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import Table from "../../components/table";
 
 type Student = {
@@ -39,24 +40,17 @@ export default function CongestionScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
+
+      {/* Back Button (نفس الصفحات السابقة) */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-
-        <View style={styles.userRow}>
-          <Ionicons name="person-circle-outline" size={32} color="#fff" />
-          <Text style={styles.userName}>Yasir Fahad</Text>
-        </View>
-
-        <View style={{ width: 40 }} />
       </View>
 
-      {/* Table */}
       <View style={styles.screen}>
         <Table
           title="Check Congestion"
@@ -134,35 +128,20 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    marginTop: 60,
+    marginTop: 20,
     paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
   },
 
   backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-
-  userName: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    alignSelf: "flex-start",
   },
 
   screen: {
     flex: 1,
-    justifyContent: "center",
+    paddingTop: 20,
     alignItems: "center",
     paddingBottom: 100,
   },

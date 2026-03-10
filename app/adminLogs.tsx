@@ -1,109 +1,117 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+
+import Table from "../components/table";
+
+type Log = {
+  id: string;
+  student: string;
+  nfc: string;
+  time: string;
+  status: "APPROVED" | "REJECTED" | "FREE";
+};
 
 export default function AdminLogs() {
+  const router = useRouter();
+
+  const rows: Log[] = [
+    { id: "1", student: "abdullah", nfc: "ASWD2478", time: "2026-02-12", status: "APPROVED" },
+    { id: "2", student: "abdullah", nfc: "ASWD2478", time: "2026-02-11", status: "REJECTED" },
+    { id: "3", student: "Ali", nfc: "JDENAP34", time: "2026-02-10", status: "FREE" },
+  ];
+
   return (
     <View style={styles.page}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Exit Logs</Text>
+      {/* Back Button */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
 
-        <View style={styles.parentBox}>
-          <Text>Parent: <Text style={styles.blue}>Abdullah Ali</Text></Text>
-          <Text>National ID: <Text style={styles.blue}>0123456789</Text></Text>
-          <Text>Phone: <Text style={styles.blue}>0512345678</Text></Text>
-        </View>
+      <View style={styles.screen}>
+        <Table
+          title="Exit Logs"
+          data={rows}
+          columns={[
+            {
+              key: "student",
+              title: "STUDENT",
+              flex: 2,
+            },
+            {
+              key: "nfc",
+              title: "NFC UID",
+              flex: 2,
+            },
+            {
+              key: "time",
+              title: "REQUEST TIME",
+              flex: 2,
+            },
+            {
+              key: "status",
+              title: "STATUS",
+              flex: 1,
+              render: (item: Log) => {
+                if (item.status === "APPROVED")
+                  return (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color="#2E7D32"
+                    />
+                  );
 
-        <View style={styles.tableHeader}>
-          <Text style={styles.header}>STUDENT</Text>
-          <Text style={styles.header}>NFC UID</Text>
-          <Text style={styles.header}>REQUEST TIME</Text>
-          <Text style={styles.header}>STATUS</Text>
-        </View>
+                if (item.status === "REJECTED")
+                  return (
+                    <Ionicons
+                      name="alert-circle"
+                      size={22}
+                      color="#D32F2F"
+                    />
+                  );
 
-        {rows.map((row, i) => (
-          <View key={i} style={styles.row}>
-            <Text>{row.student}</Text>
-            <Text>{row.nfc}</Text>
-            <Text>{row.time}</Text>
-            <Text style={[styles.status, statusStyle(row.status)]}>
-              {row.status}
-            </Text>
-          </View>
-        ))}
+                return (
+                  <Ionicons
+                    name="time-outline"
+                    size={22}
+                    color="#999"
+                  />
+                );
+              },
+            },
+          ]}
+        />
       </View>
     </View>
   );
 }
 
-const rows = [
-  { student: "abdullah", nfc: "ASWD2478", time: "2026-02-12", status: "APPROVED" },
-  { student: "abdullah", nfc: "ASWD2478", time: "2026-02-11", status: "REJECTED" },
-  { student: "Ali", nfc: "JDENAP34", time: "2026-02-10", status: "FREE" },
-];
-
-const statusStyle = (status: string) => {
-  if (status === "APPROVED") return { backgroundColor: "#C6E9D3" };
-  if (status === "REJECTED") return { backgroundColor: "#F7C6C6" };
-  return { backgroundColor: "#CFE1FF" };
-};
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#EEF1EF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  card: {
-    width: 800,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 30,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 20,
-  },
-
-  parentBox: {
-    backgroundColor: "#F3F3F3",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-
-  blue: {
-    color: "#2A6FD6",
-  },
-
-  tableHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
   },
 
   header: {
-    fontWeight: "700",
-    width: 150,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
 
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 0.5,
-    borderColor: "#ddd",
+  backButton: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    alignSelf: "flex-start",
   },
 
-  status: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 6,
+  screen: {
+    flex: 1,
+    alignItems: "center",
+    paddingTop: 10,
   },
 });

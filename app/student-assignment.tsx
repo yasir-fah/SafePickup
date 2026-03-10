@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -60,76 +59,68 @@ export default function StudentAssignment() {
   };
 
   return (
-    <LinearGradient
-      colors={["#0E6B3B", "#0A4F2A", "#041E12"]}
-      style={{ flex: 1 }}
-    >
-      <SafeAreaView style={{ flex: 1 }}>
-        <StatusBar barStyle="light-content" />
+    <SafeAreaView style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" />
 
-        {/* HEADER */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.push("/dashboard")}
-          >
-            <Ionicons name="arrow-back" size={22} color="#fff" />
-          </TouchableOpacity>
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.back()}
+      >
+        <Ionicons name="arrow-back" size={22} color="#fff" />
+      </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Student Assignment</Text>
-        </View>
+      <ScrollView contentContainerStyle={styles.screen}>
+        <View style={styles.card}>
+          <Text style={styles.title}>
+            Link student to:
+            <Text style={styles.parentName}> {parentName}</Text>
+          </Text>
 
-        <ScrollView contentContainerStyle={styles.screen}>
-          <View style={styles.card}>
-            <Text style={styles.title}>
-              Link student to:
-              <Text style={styles.parentName}> {parentName}</Text>
-            </Text>
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder="Find student by name"
+              value={query}
+              onChangeText={setQuery}
+              style={styles.searchInput}
+              placeholderTextColor="#999"
+            />
+          </View>
 
-            <View style={styles.searchContainer}>
-              <TextInput
-                placeholder="Find student by name"
-                value={query}
-                onChangeText={setQuery}
-                style={styles.searchInput}
-                placeholderTextColor="#999"
-              />
-            </View>
-
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View
-                style={[
-                  styles.table,
-                  { minWidth: Math.max(SCREEN_WIDTH - 48, 500) },
-                ]}
-              >
-                <View style={styles.headerRow}>
-                  <View style={[styles.cell, styles.nameCell]}>
-                    <Text style={styles.tableHeaderText}>NAME</Text>
-                  </View>
-
-                  <View style={[styles.cell, styles.centerCell]}>
-                    <Text style={styles.tableHeaderText}>GRADE</Text>
-                  </View>
-
-                  <View style={[styles.cell, styles.actionsCell]}>
-                    <Text style={styles.tableHeaderText}>ACTION</Text>
-                  </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View
+              style={[
+                styles.table,
+                { minWidth: Math.max(SCREEN_WIDTH - 48, 500) },
+              ]}
+            >
+              {/* Table Header */}
+              <View style={styles.headerRow}>
+                <View style={[styles.cell, styles.nameCell]}>
+                  <Text style={styles.tableHeaderText}>NAME</Text>
                 </View>
 
-                <FlatList
-                  data={filtered}
-                  keyExtractor={(i) => i.id}
-                  renderItem={renderRow}
-                  showsVerticalScrollIndicator={false}
-                  style={styles.list}
-                />
+                <View style={[styles.cell, styles.centerCell]}>
+                  <Text style={styles.tableHeaderText}>GRADE</Text>
+                </View>
+
+                <View style={[styles.cell, styles.actionsCell]}>
+                  <Text style={styles.tableHeaderText}>ACTION</Text>
+                </View>
               </View>
-            </ScrollView>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+
+              <FlatList
+                data={filtered}
+                keyExtractor={(i) => i.id}
+                renderItem={renderRow}
+                showsVerticalScrollIndicator={false}
+                style={styles.list}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -140,25 +131,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
 
-  header: {
-    marginTop: 40,
-    marginBottom: 20,
-    paddingTop: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 15,
-  },
-
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
   backButton: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
     position: "absolute",
+    top: 50,
     left: 20,
+    zIndex: 10,
   },
 
   card: {

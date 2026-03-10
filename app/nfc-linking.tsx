@@ -58,25 +58,18 @@ const NFCLinking = () => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Link NFC Card</Text>
-
-        <View style={{ width: 40 }} />
       </View>
 
       <View style={styles.screen}>
-
         <View style={styles.card}>
-
           <Text style={styles.title}>
             Link student to NFC: {uid}
           </Text>
@@ -121,19 +114,28 @@ const NFCLinking = () => {
               },
             ]}
           />
-
         </View>
-
       </View>
-
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-
   safe: {
     flex: 1,
+  },
+
+  /* نفس الهيدر السابق */
+  header: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+
+  backButton: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    alignSelf: "flex-start",
   },
 
   screen: {
@@ -141,27 +143,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingVertical: 24,
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginTop: 60,
-  },
-
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
   },
 
   card: {
@@ -204,7 +185,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-
 });
 
 export default NFCLinking;

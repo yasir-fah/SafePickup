@@ -41,27 +41,9 @@ const Card: React.FC<CardProps> = ({
 export default function Dashboard() {
   const router = useRouter();
   return (
-    <LinearGradient
-      colors={["#0E6B3B", "#0A4F2A", "#041E12"]}
-      style={{ flex: 1 }}
-    >
+    
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.userRow}>
-            <Ionicons name="person-circle-outline" size={36} color="#fff" />
-            <Text style={styles.userName}>Yasir Fahad</Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.logoutBtn}
-            onPress={() => router.replace("/")}
-          >
-            <Ionicons name="log-out-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
 
         {/* Content */}
         <ScrollView contentContainerStyle={styles.content}>
@@ -83,7 +65,7 @@ export default function Dashboard() {
             title="Parent Records & Logs"
             description="Browse and manage all registered parent accounts."
             buttonText="Explore"
-            onPress={() => console.log("Explore Logs")}
+            onPress={() => router.push("/adminLogs")}
           />
 
           <Card
@@ -94,8 +76,8 @@ export default function Dashboard() {
           />
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
-  );
+
+);
 }
 
 const styles = StyleSheet.create({

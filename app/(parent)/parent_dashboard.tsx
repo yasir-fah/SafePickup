@@ -18,20 +18,7 @@ export default function ParentDashboard() {
     <>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.userRow}>
-          <Ionicons name="person-circle-outline" size={36} color="#fff" />
-          <Text style={styles.userName}>Yasir Fahad</Text>
-        </View>
-
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => router.replace("/")}
-        >
-          <Ionicons name="log-out-outline" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
+     
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* Pickup */}
@@ -54,7 +41,7 @@ export default function ParentDashboard() {
             Use this page to track your child's school entry and exit times.
           </Text>
 
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={() => router.push("/childLog")}>
             <Ionicons name="time" size={18} color="#0E6B3B" />
             <Text style={styles.buttonText}>View Attendance</Text>
           </TouchableOpacity>
@@ -78,28 +65,11 @@ export default function ParentDashboard() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    paddingBottom: 20,
-  },
+  
 
-  userRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
+  
 
-  userName: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
+  
 
   logoutBtn: {
     backgroundColor: "rgba(255,255,255,0.15)",
