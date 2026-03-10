@@ -1,80 +1,37 @@
-import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Dimensions,
-  FlatList,
+  View,
+  Text,
+  StyleSheet,
   SafeAreaView,
   ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
+  FlatList,
   TouchableOpacity,
-  View
+  StatusBar,
+  Dimensions,
 } from "react-native";
+
+import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
+import { useRouter } from "expo-router";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SAMPLE_DATA = [
-  {
-    id: "1",
-    name: "ahmed alzaid",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "approved",
-  },
-  {
-    id: "2",
-    name: "Faisal Alahassoun",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "approved",
-  },
-  {
-    id: "3",
-    name: "Yasir Alateeq",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "approved",
-  },
-  {
-    id: "4",
-    name: "Yaser Alrashid",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "approved",
-  },
-  {
-    id: "5",
-    name: "John doe",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "Pending",
-  },
-  {
-    id: "6",
-    name: "ahmed alzaid",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "approved",
-  },
-  {
-    id: "7",
-    name: "Faisal Alahassoun",
-    nid: "11******11",
-    phone: "0512345678",
-    status: "Pending",
-  },
+  { id: "1", name: "ahmed alzaid", nid: "11******11", phone: "0512345678", status: "approved" },
+  { id: "2", name: "Faisal Alahassoun", nid: "11******11", phone: "0512345678", status: "approved" },
+  { id: "3", name: "Yasir Alateeq", nid: "11******11", phone: "0512345678", status: "approved" },
+  { id: "4", name: "Yaser Alrashid", nid: "11******11", phone: "0512345678", status: "approved" },
+  { id: "5", name: "John doe", nid: "11******11", phone: "0512345678", status: "Pending" },
+  { id: "6", name: "ahmed alzaid", nid: "11******11", phone: "0512345678", status: "approved" },
+  { id: "7", name: "Faisal Alahassoun", nid: "11******11", phone: "0512345678", status: "Pending" },
 ];
 
 export default function ParentsLinkingHub() {
   const router = useRouter();
 
   const renderRow = ({ item, index }: { item: any; index: number }) => {
-    const backgroundColor =
-      index % 2 === 0 ? "#ffffff" : index % 2 === 1 ? "#fcfcfc" : "#f7f7f7";
+    const backgroundColor = index % 2 === 0 ? "#ffffff" : "#fcfcfc";
 
     return (
       <View style={[styles.row, { backgroundColor }]}>
@@ -106,17 +63,13 @@ export default function ParentsLinkingHub() {
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() =>
-                router.push(
-                  `/student-assignment?name=${encodeURIComponent(item.name)}`,
-                )
+                router.push(`/student-assignment?name=${encodeURIComponent(item.name)}`)
               }
             >
               <Text style={styles.actionBtnText}>Link</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.actionBtnSpacing]}
-            >
+            <TouchableOpacity style={[styles.actionBtn, styles.actionBtnSpacing]}>
               <Text style={styles.actionBtnText}>History</Text>
             </TouchableOpacity>
           </View>
@@ -126,10 +79,8 @@ export default function ParentsLinkingHub() {
   };
 
   return (
-    <LinearGradient
-      colors={["#0E6B3B", "#0A4F2A", "#041E12"]}
-      style={{ flex: 1 }}
-    >
+    <>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -137,8 +88,6 @@ export default function ParentsLinkingHub() {
         >
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Parents Assignment</Text>
       </View>
 
       <SafeAreaView style={{ flex: 1 }}>
@@ -155,7 +104,7 @@ export default function ParentsLinkingHub() {
                   { minWidth: Math.max(SCREEN_WIDTH - 48, 900) },
                 ]}
               >
-                {/* Header Row */}
+                {/* Table Header */}
                 <View style={styles.headerRow}>
                   <View style={[styles.cell, styles.nameCell]}>
                     <Text style={styles.tableHeaderText}>NAME</Text>
@@ -178,9 +127,10 @@ export default function ParentsLinkingHub() {
                   </View>
                 </View>
 
+                {/* Table Rows */}
                 <FlatList
                   data={SAMPLE_DATA}
-                  keyExtractor={(i) => i.id}
+                  keyExtractor={(item) => item.id}
                   renderItem={renderRow}
                   showsVerticalScrollIndicator={false}
                   style={styles.list}
@@ -190,7 +140,7 @@ export default function ParentsLinkingHub() {
           </BlurView>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </>
   );
 }
 
@@ -202,23 +152,18 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    marginTop: 40,
-    marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-  },
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
 
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
   },
 
   backButton: {
-    position: "absolute",
-    left: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    marginHorizontal: 8,
   },
 
   card: {
@@ -236,7 +181,9 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  table: { flexDirection: "column" },
+  table: {
+    flexDirection: "column",
+  },
 
   headerRow: {
     flexDirection: "row",
@@ -250,7 +197,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  list: { maxHeight: 420 },
+  list: {
+    maxHeight: 420,
+  },
 
   row: {
     flexDirection: "row",
@@ -258,10 +207,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#eeeeee",
-  },
-
-  rowEven: {
-    backgroundColor: "#fafafa",
   },
 
   cell: {
@@ -273,8 +218,15 @@ const styles = StyleSheet.create({
   centerCell: { flex: 1, alignItems: "center" },
   actionsCell: { flex: 1.6 },
 
-  nameText: { fontSize: 14, color: "#111" },
-  normalText: { fontSize: 13, color: "#333" },
+  nameText: {
+    fontSize: 14,
+    color: "#111",
+  },
+
+  normalText: {
+    fontSize: 13,
+    color: "#333",
+  },
 
   statusBadge: {
     paddingHorizontal: 10,

@@ -41,20 +41,9 @@ const Card: React.FC<CardProps> = ({
 export default function Dashboard() {
   const router = useRouter();
   return (
-    <LinearGradient
-      colors={["#0E6B3B", "#0A4F2A", "#041E12"]}
-      style={{ flex: 1 }}
-    >
+    
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
-
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.userRow}>
-            <Ionicons name="person-circle-outline" size={36} color="#fff" />
-            <Text style={styles.userName}>Yasir Fahad</Text>
-          </View>
-        </View>
 
         {/* Content */}
         <ScrollView contentContainerStyle={styles.content}>
@@ -76,7 +65,7 @@ export default function Dashboard() {
             title="Parent Records & Logs"
             description="Browse and manage all registered parent accounts."
             buttonText="Explore"
-            onPress={() => console.log("Explore Logs")}
+            onPress={() => router.push("/adminLogs")}
           />
 
           <Card
@@ -87,8 +76,8 @@ export default function Dashboard() {
           />
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
-  );
+
+);
 }
 
 const styles = StyleSheet.create({
@@ -100,6 +89,12 @@ const styles = StyleSheet.create({
   header: {
     marginTop: 40,
     marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
   },
 
   userRow: {
@@ -149,7 +144,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 14,
   },
-
+  logoutBtn: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+  },
   cardButtonText: {
     color: "#0E6B3B",
     fontSize: 13,

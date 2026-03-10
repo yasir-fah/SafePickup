@@ -11,35 +11,37 @@ export default function Navbar({ userName = "Yasir Fahad" }: NavbarProps) {
   const pathname = usePathname();
 
   const goMain = () => {
-    router.push("/homePage" as any);
+    router.push("/dashboard" as any);
   };
 
   const goAbout = () => {
     router.push("/about" as any);
   };
 
-  const isMain = pathname === "/homePage";
+  const isMain = pathname === "/dashboard";
   const isAbout = pathname === "/about";
 
   return (
     <View style={styles.wrapper}>
       <View style={styles.navbar}>
         <View style={styles.leftSection}>
-          <Ionicons name="chevron-down" size={18} color="#FFFFFF" />
-          <Text style={styles.userName}>{userName}</Text>
+
           <Ionicons
             name="person-circle-outline"
             size={30}
             color="#FFFFFF"
             style={styles.avatar}
           />
+          <Text style={styles.userName}>{userName}</Text>
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={() => router.replace("/")}
+          >
+            <Ionicons name="log-out-outline" size={22} color="#fff" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.tabs}>
-          <TouchableOpacity onPress={goAbout} style={styles.tab} activeOpacity={0.8}>
-            <Text style={[styles.tabText, isAbout && styles.activeText]}>about</Text>
-            {isAbout && <View style={styles.underline} />}
-          </TouchableOpacity>
 
           <TouchableOpacity onPress={goMain} style={styles.tab} activeOpacity={0.8}>
             <Text style={[styles.tabText, isMain && styles.activeText]}>main</Text>
@@ -53,6 +55,7 @@ export default function Navbar({ userName = "Yasir Fahad" }: NavbarProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
+    marginTop: 30,
     paddingHorizontal: 20,
     paddingTop: 15,
     paddingBottom: 10,
@@ -69,6 +72,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 5,
+    marginBottom: 10,
   },
   leftSection: {
     flexDirection: "row",
@@ -106,5 +110,10 @@ const styles = StyleSheet.create({
     height: 2,
     backgroundColor: "#FFFFFF",
     borderRadius: 2,
-  },
+  }, logoutBtn: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    padding: 8,
+    borderRadius: 10,
+    marginHorizontal: 8,
+  }
 });
