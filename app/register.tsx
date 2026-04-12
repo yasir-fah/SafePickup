@@ -6,7 +6,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Alert,
   ActivityIndicator,
@@ -62,7 +61,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Switch Header */}
       <View style={styles.switchContainer}>
         <TouchableOpacity
@@ -158,7 +157,7 @@ export default function RegisterScreen() {
         <Text style={styles.bottomText}>Terms</Text>
         <Text style={styles.bottomText}>Policy</Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -167,6 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     paddingHorizontal: 20,
+    paddingTop: 20,
   },
 
   switchContainer: {
@@ -202,6 +202,7 @@ const styles = StyleSheet.create({
 
   glassCard: {
     borderRadius: 30,
+    marginTop: 12,
     padding: 20,
     marginHorizontal: 20,
     overflow: "hidden",

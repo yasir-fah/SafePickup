@@ -1,10 +1,12 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   StatusBar,
   Alert,
@@ -55,6 +57,7 @@ export default function LoginScreen() {
   };
 
   return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
@@ -121,6 +124,7 @@ export default function LoginScreen() {
         <Text style={styles.bottomText}>Policy</Text>
       </View>
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
