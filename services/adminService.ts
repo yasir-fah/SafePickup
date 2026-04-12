@@ -29,9 +29,17 @@ export interface AdminLogDto {
   status: string;
 }
 
+export interface StudentWithNationalIdDto {
+  id: number;
+  username: string;
+  grade: string;
+  NationalId: string;
+}
+
 export interface RegisterStudentPayload {
   name: string;
   Grade: string;
+  NationalId: string;
   SchoolLat: number;
   SchoolLon: number;
 }
@@ -44,9 +52,9 @@ export const adminService = {
     return data;
   },
 
-  async getAllStudents(): Promise<StudentDto[]> {
-    const { data } = await apiClient.get<StudentDto[]>(
-      "/api/v1/student/parent/assignment"
+  async getAllStudents(): Promise<StudentWithNationalIdDto[]> {
+    const { data } = await apiClient.get<StudentWithNationalIdDto[]>(
+      "/api/v1/student/get/students/national-id"
     );
     return data;
   },

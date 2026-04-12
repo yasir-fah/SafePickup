@@ -21,6 +21,7 @@ export default function AddStudentScreen() {
   const [form, setForm] = useState({
     name: "",
     grade: "",
+    nationalId: "",
     latitude: "",
     longitude: "",
   });
@@ -52,8 +53,8 @@ export default function AddStudentScreen() {
       Alert.alert("Forbidden", "Admin access required.");
       return;
     }
-    const { name, grade, latitude, longitude } = form;
-    if (!name || !grade || !latitude || !longitude) {
+    const { name, grade, nationalId, latitude, longitude } = form;
+    if (!name || !grade || !nationalId || !latitude || !longitude) {
       Alert.alert("Missing fields", "Please fill in all fields.");
       return;
     }
@@ -66,6 +67,7 @@ export default function AddStudentScreen() {
     mutation.mutate({
       name,
       Grade: grade,
+      NationalId: nationalId,
       SchoolLat: lat,
       SchoolLon: lon,
     });
@@ -108,6 +110,15 @@ export default function AddStudentScreen() {
             placeholderTextColor="#888"
             value={form.grade}
             onChangeText={(text) => handleChange("grade", text)}
+          />
+
+          <Text style={styles.label}>National Id</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="1234567890"
+            placeholderTextColor="#888"
+            value={form.nationalId}
+            onChangeText={(text) => handleChange("nationalId", text)}
           />
 
           <Text style={styles.label}>School Latitude</Text>

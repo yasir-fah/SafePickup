@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   FlatList,
+  TextInput,
   TouchableOpacity,
   StatusBar,
   Dimensions,
@@ -25,6 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export default function ParentsLinkingHub() {
   const router = useRouter();
   const { role } = useAuth();
+  const [query, setQuery] = useState("");
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["parents", "assignment"],
@@ -37,6 +39,10 @@ export default function ParentsLinkingHub() {
       Alert.alert("Error", (error as Error)?.message || "Failed to load parents.");
     }
   }, [isError, error]);
+
+  const filteredParents: ParentForAssignment[] = (data ?? []).filter((p) =>
+    (p?.username || "").toLowerCase().includes(query.toLowerCase())
+  );
 
   if (role && role !== "ADMIN") {
     return (
@@ -97,9 +103,19 @@ export default function ParentsLinkingHub() {
       <SafeAreaView style={{ flex: 1 }}>
         <StatusBar barStyle="light-content" />
 
-        <ScrollView contentContainerStyle={styles.screen}>
-          <BlurView intensity={60} tint="light" style={styles.card}>
+        <View style={[styles.screen, { flex: 1 }]}>
+          <BlurView intensity={60} tint="light" style={[styles.card]}>
             <Text style={styles.title}>Available Parents</Text>
+
+            <View style={styles.searchContainer}>
+              <TextInput
+                placeholder="Find parent by name"
+                value={query}
+                onChangeText={setQuery}
+                style={styles.searchInput}
+                placeholderTextColor="#999"
+              />
+            </View>
 
             {isLoading ? (
               <ActivityIndicator color="#0E6B3B" style={{ marginVertical: 30 }} />
@@ -109,12 +125,7 @@ export default function ParentsLinkingHub() {
               </Text>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View
-                  style={[
-                    styles.table,
-                    { minWidth: Math.max(SCREEN_WIDTH - 48, 800) },
-                  ]}
-                >
+                <View style={[styles.table, { minWidth: 380 }]}>
                   <View style={styles.headerRow}>
                     <View style={[styles.cell, styles.nameCell]}>
                       <Text style={styles.tableHeaderText}>NAME</Text>
@@ -129,12 +140,12 @@ export default function ParentsLinkingHub() {
                     </View>
 
                     <View style={[styles.cell, styles.actionsCell]}>
-                      <Text style={styles.tableHeaderText}>ACTIONS</Text>
+                      <Text style={styles.tableHeaderText}>ACTION</Text>
                     </View>
                   </View>
 
                   <FlatList
-                    data={data ?? []}
+                    data={filteredParents}
                     keyExtractor={(item) => String(item.id)}
                     renderItem={renderRow}
                     showsVerticalScrollIndicator={false}
@@ -144,7 +155,7 @@ export default function ParentsLinkingHub() {
               </ScrollView>
             )}
           </BlurView>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </>
   );
@@ -152,8 +163,8 @@ export default function ParentsLinkingHub() {
 
 const styles = StyleSheet.create({
   screen: {
-    flexGrow: 1,
-    justifyContent: "center",
+    flex: 1,
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
 
@@ -169,11 +180,12 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 10,
     marginHorizontal: 8,
+    marginBottom: 20
   },
 
   card: {
     borderRadius: 28,
-    padding: 20,
+    padding: 14,
     backgroundColor: "#ffffff",
     overflow: "hidden",
     elevation: 6,
@@ -186,6 +198,17 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
 
+  searchContainer: { marginBottom: 18 },
+
+  searchInput: {
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+
   table: { flexDirection: "column" },
 
   headerRow: {
@@ -194,44 +217,60 @@ const styles = StyleSheet.create({
   },
 
   tableHeaderText: {
-    fontSize: 12,
-    color: "#757575",
+    fontSize: 11,
+    color: "#555",
     textTransform: "uppercase",
-    fontWeight: "600",
+    fontWeight: "800",
   },
 
-  list: { maxHeight: 420 },
+  list: { maxHeight: 200 },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eeeeee",
   },
 
   cell: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 2,
     justifyContent: "center",
   },
 
-  nameCell: { flex: 2 },
-  centerCell: { flex: 1.5, alignItems: "center" },
-  actionsCell: { flex: 1.2, alignItems: "center" },
+  nameCell: { 
+    width: 140, 
+    paddingHorizontal: 4,
+    justifyContent: "center",
+  },
+  centerCell: { 
+    width: 110, 
+    alignItems: "center", 
+    paddingHorizontal: 4,
+  },
+  
+  actionsCell: { 
+    width: 80, 
+    alignItems: "center", 
+    justifyContent: "center",
+  },
 
-  nameText: { fontSize: 14, color: "#111" },
-  normalText: { fontSize: 13, color: "#333" },
+  nameText: { fontSize: 13, color: "#111" },
+  normalText: { fontSize: 12, color: "#333" },
 
   actionBtn: {
     backgroundColor: "#0E6B3B",
-    borderRadius: 12,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minWidth: 56,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   actionBtnText: {
     color: "#fff",
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700",
   },
 });

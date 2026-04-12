@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import  {ActivityIndicator,
+import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
@@ -15,7 +16,7 @@ import  {ActivityIndicator,
   View,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminService, StudentDto } from "../services/adminService";
+import { adminService, StudentWithNationalIdDto } from "../services/adminService";
 import { useAuth } from "../context/AuthContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -58,21 +59,25 @@ export default function StudentAssignment() {
     );
   }
 
-  const students: StudentDto[] = data ?? [];
+  const students: StudentWithNationalIdDto[] = data ?? [];
   const filtered = students.filter((s) => {
-    const name = (s.username || s.name || "").toLowerCase();
+    const name = (s.username || "").toLowerCase();
     return name.includes(query.toLowerCase());
   });
 
-  const renderRow = ({ item, index }: { item: StudentDto; index: number }) => {
-    const even = index % 2 === 0;
-    const name = item.username || item.name || "";
-    const grade = item.grade || item.Grade || "";
+  const renderRow = ({ item, index }: { item: StudentWithNationalIdDto; index: number }) => {
+    const backgroundColor = index % 2 === 0 ? "#ffffff" : "#fcfcfc";
+    const name = item.username || "";
+    const grade = item.grade || "";
 
     return (
-      <View style={[styles.row, even && styles.rowEven]}>
+      <View style={[styles.row, { backgroundColor }]}>
         <View style={[styles.cell, styles.nameCell]}>
           <Text style={styles.nameText}>{name}</Text>
+        </View>
+
+        <View style={[styles.cell, styles.centerCell]}>
+          <Text style={styles.normalText}>{item.NationalId}</Text>
         </View>
 
         <View style={[styles.cell, styles.centerCell]}>
@@ -87,7 +92,14 @@ export default function StudentAssignment() {
                 Alert.alert("Error", "Missing parent id.");
                 return;
               }
-              linkMutation.mutate(Number(item.id));
+              Alert.alert(
+                "Confirm Assignment",
+                `Link student ${name} to parent ${parentName}?`,
+                [
+                  { text: "Cancel", style: "cancel" },
+                  { text: "Confirm", onPress: () => linkMutation.mutate(Number(item.id)) },
+                ]
+              );
             }}
             disabled={linkMutation.isPending}
           >
@@ -103,108 +115,111 @@ export default function StudentAssignment() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar barStyle="light-content" />
+    <>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={22} color="#fff" />
-      </TouchableOpacity>
+      <SafeAreaView style={{ flex: 1 }}>
+        <StatusBar barStyle="light-content" />
 
-      <ScrollView contentContainerStyle={styles.screen}>
-        <View style={styles.card}>
-          <Text style={styles.title}>
-            Link student to:
-            <Text style={styles.parentName}> {parentName}</Text>
-          </Text>
-
-          <View style={styles.searchContainer}>
-            <TextInput
-              placeholder="Find student by name"
-              value={query}
-              onChangeText={setQuery}
-              style={styles.searchInput}
-              placeholderTextColor="#999"
-            />
-          </View>
-
-          {isLoading ? (
-            <ActivityIndicator color="#0E6B3B" style={{ marginVertical: 30 }} />
-          ) : isError ? (
-            <Text style={{ color: "#D32F2F", textAlign: "center" }}>
-              Failed to load students.
+        <View style={styles.screen}>
+          <View style={styles.card}>
+            <Text style={styles.title}>
+              Link student to:
+              <Text style={styles.parentName}> {parentName}</Text>
             </Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View
-                style={[
-                  styles.table,
-                  { minWidth: Math.max(SCREEN_WIDTH - 48, 500) },
-                ]}
-              >
-                <View style={styles.headerRow}>
-                  <View style={[styles.cell, styles.nameCell]}>
-                    <Text style={styles.tableHeaderText}>NAME</Text>
+
+            <View style={styles.searchContainer}>
+              <TextInput
+                placeholder="Find student by name"
+                value={query}
+                onChangeText={setQuery}
+                style={styles.searchInput}
+                placeholderTextColor="#999"
+              />
+            </View>
+
+            {isLoading ? (
+              <ActivityIndicator color="#0E6B3B" style={{ marginVertical: 30 }} />
+            ) : isError ? (
+              <Text style={{ color: "#D32F2F", textAlign: "center" }}>
+                Failed to load students.
+              </Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={[styles.table, { minWidth: 460 }]}>
+                  <View style={styles.headerRow}>
+                    <View style={[styles.cell, styles.nameCell]}>
+                      <Text style={styles.tableHeaderText}>NAME</Text>
+                    </View>
+
+                    <View style={[styles.cell, styles.centerCell]}>
+                      <Text style={styles.tableHeaderText}>NATIONAL ID</Text>
+                    </View>
+
+                    <View style={[styles.cell, styles.centerCell]}>
+                      <Text style={styles.tableHeaderText}>GRADE</Text>
+                    </View>
+
+                    <View style={[styles.cell, styles.actionsCell]}>
+                      <Text style={styles.tableHeaderText}>ACTION</Text>
+                    </View>
                   </View>
 
-                  <View style={[styles.cell, styles.centerCell]}>
-                    <Text style={styles.tableHeaderText}>GRADE</Text>
-                  </View>
-
-                  <View style={[styles.cell, styles.actionsCell]}>
-                    <Text style={styles.tableHeaderText}>ACTION</Text>
-                  </View>
+                  <FlatList
+                    data={filtered}
+                    keyExtractor={(i) => String(i.id)}
+                    renderItem={renderRow}
+                    showsVerticalScrollIndicator={false}
+                    style={styles.list}
+                  />
                 </View>
-
-                <FlatList
-                  data={filtered}
-                  keyExtractor={(i) => String(i.id)}
-                  renderItem={renderRow}
-                  showsVerticalScrollIndicator={false}
-                  style={styles.list}
-                />
-              </View>
-            </ScrollView>
-          )}
+              </ScrollView>
+            )}
+          </View>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    flexGrow: 1,
-    justifyContent: "center",
+    flex: 1,
+    justifyContent: "flex-start",
     paddingHorizontal: 20,
   },
 
-  card: {
-    borderRadius: 28,
-    padding: 20,
-    backgroundColor: "#ffffff",
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
   },
 
   backButton: {
-    top: 0,
-    left: 20,
-    width: 38,
-    height: 38,
     backgroundColor: "rgba(255,255,255,0.15)",
     padding: 8,
     borderRadius: 10,
     marginHorizontal: 8,
+    marginBottom: 20,
+  },
+
+  card: {
+    borderRadius: 28,
+    padding: 14,
+    backgroundColor: "#ffffff",
+    overflow: "hidden",
+    elevation: 6,
   },
 
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#333",
+    color: "#0E6B3B",
     marginBottom: 18,
   },
 
@@ -232,39 +247,52 @@ const styles = StyleSheet.create({
   },
 
   tableHeaderText: {
-    fontSize: 12,
-    color: "#757575",
+    fontSize: 11,
+    color: "#555",
     textTransform: "uppercase",
-    fontWeight: "600",
+    fontWeight: "800",
   },
 
-  list: { maxHeight: 360 },
+  list: { maxHeight: 200 },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eeeeee",
   },
 
-  rowEven: { backgroundColor: "#fafafa" },
-
   cell: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 2,
     justifyContent: "center",
   },
 
-  nameCell: { flex: 2 },
-  centerCell: { flex: 1, alignItems: "center" },
-  actionsCell: { flex: 1, alignItems: "center" },
+  nameCell: {
+    width: 140,
+    paddingHorizontal: 4,
+    justifyContent: "center",
+  },
 
-  nameText: { fontSize: 14, color: "#111" },
+  centerCell: {
+    width: 110,
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+
+  actionsCell: {
+    width: 80,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  nameText: { fontSize: 13, color: "#111" },
+  normalText: { fontSize: 12, color: "#333" },
 
   gradeBadge: {
     backgroundColor: "#e8f5e9",
     color: "#2e7d32",
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
     fontSize: 12,
@@ -273,17 +301,17 @@ const styles = StyleSheet.create({
 
   actionBtn: {
     backgroundColor: "#0E6B3B",
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    borderRadius: 10,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    minWidth: 70,
+    minWidth: 56,
     alignItems: "center",
-    justifyContent: "center", // Added to center the text perfectly
+    justifyContent: "center",
   },
 
   actionBtnText: {
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });

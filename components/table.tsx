@@ -111,10 +111,10 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontSize: 12,
-    color: "#777",
+    fontSize: 11,
+    color: "#555",
     textTransform: "uppercase",
-    fontWeight: "600",
+    fontWeight: "800",
     textAlign: "center",
     flexWrap: "wrap",
   },
