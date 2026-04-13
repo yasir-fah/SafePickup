@@ -35,6 +35,7 @@ function RootLayoutInner() {
     pathname.includes("childLog") ||
     pathname.includes("about");
   const mainRoute = isParentScreen ? "/parent_dashboard" : "/dashboard";
+  const hideFooter = hideLayout || !isParentScreen;
 
   return (
     <LinearGradient
@@ -80,7 +81,7 @@ function RootLayoutInner() {
         </Stack>
       </View>
 
-      {!hideLayout && <Footer />}
+      {!hideFooter && <Footer />}
     </LinearGradient>
   );
 }

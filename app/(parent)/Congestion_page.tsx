@@ -93,16 +93,18 @@ export default function CongestionScreen() {
       return <Ionicons name="time-outline" size={22} color="#999" />;
     }
 
-    const status = (result.status || "").toLowerCase();
+    const status = (result.avgJamFactor / 10);
     let iconName: keyof typeof Ionicons.glyphMap = "alert-circle";
     let color = "#999";
-    if (status === "low") {
+    if (status >= 0.0 && status <= 0.30) {
       iconName = "checkmark-circle";
       color = "#2E7D32";
-    } else if (status === "mid") {
+    } 
+    if (status > 0.3 && status <= 0.7) {
       iconName = "alert-circle";
       color = "#F9A825";
-    } else if (status === "high") {
+    } 
+    if (status > 0.7) {
       iconName = "close-circle";
       color = "#D32F2F";
     }
