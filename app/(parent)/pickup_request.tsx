@@ -2,8 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Modal,
   SafeAreaView,
   StyleSheet,
@@ -13,10 +15,9 @@ import {
   View,
 } from "react-native";
 import Table from "../../components/table";
+import { MyStudentDto, parentService } from "../../services/parentService";
 
-type Student = {
-  id: string;
-  name: string;
+type StudentRow = MyStudentDto & {
   status: "APPROVED" | "REJECTED" | "NONE";
 };
 
@@ -28,19 +29,36 @@ export default function PickupRequest() {
   const [chooseAuthVisible, setChooseAuthVisible] = useState(false);
   const [otpModalVisible, setOtpModalVisible] = useState(false);
   const [otp, setOtp] = useState("");
-  const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
-  const [pendingLocation, setPendingLocation] = useState<{
+  const [pendingStudentId, setPendingStudentId] = useState<number | null>(null);
+  const pendingLocationRef = useRef<{
     latitude: number;
     longitude: number;
   } | null>(null);
   const otpInputRef = useRef<TextInput>(null);
 
-  const [students, setStudents] = useState<Student[]>([
-    { id: "1", name: "ahmed alzaid", status: "NONE" },
-    { id: "2", name: "Faisal Alahassoun", status: "APPROVED" },
-    { id: "3", name: "Yasir Alateeq", status: "REJECTED" },
-    { id: "4", name: "Yaser Alrashid", status: "REJECTED" },
-  ]);
+  const [students, setStudents] = useState<StudentRow[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
+  // Loading states for buttons
+  const [pickupLoadingId, setPickupLoadingId] = useState<number | null>(null);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const data = await parentService.getMyStudents();
+        setStudents(data.map((s) => ({ ...s, status: "NONE" })));
+      } catch {
+        setModalMessage("Failed to load students.");
+        setModalVisible(true);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+    fetchStudents();
+  }, []);
 
   const getPickupLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -51,53 +69,84 @@ export default function PickupRequest() {
       return null;
     }
 
-    const location = await Location.getCurrentPositionAsync({});
+    const location = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    });
     return {
       latitude: location.coords.latitude,
       longitude: location.coords.longitude,
     };
   };
 
-  const requestPickup = async (id: string) => {
-    const location = pendingLocation;
-
-    if (!location) {
-      setModalMessage("Location is required before requesting pickup.");
-      setModalVisible(true);
-      return;
-    }
-
-    /* todo: send http request: 
-     * {
-          parentLat: location.latitude,
-          parentLon: location.longitude
-        }
-    */
-
-    setStudents((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: "APPROVED" } : s)),
-    );
-  };
-
-  const handlePickupPress = async (id: string) => {
+  const handlePickupPress = async (id: number) => {
+    pendingLocationRef.current = null;
     setPendingStudentId(id);
+    setPickupLoadingId(id);
 
-    const location = await getPickupLocation();
+    try {
+      const location = await getPickupLocation();
 
-    if (!location) {
+      if (!location) {
+        setPendingStudentId(null);
+        return;
+      }
+
+      pendingLocationRef.current = location;
+
+      // Create exit log before showing auth modal
+      console.log("lat:"+ location.latitude + "lon:"+ location.longitude);
+      await parentService.pickupRequest(id, {
+        parentLat: location.latitude,
+        parentLon: location.longitude,
+      });
+
+      setChooseAuthVisible(true);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to request pickup. Please try again.";
+      Alert.alert("Error", msg);
       setPendingStudentId(null);
-      setPendingLocation(null);
-      return;
+      pendingLocationRef.current = null;
+    } finally {
+      setPickupLoadingId(null);
     }
-
-    setPendingLocation(location);
-    setChooseAuthVisible(true);
   };
 
-  const handleChooseOtp = () => {
+  const handleChooseOtp = async () => {
     setChooseAuthVisible(false);
+    setSendingOtp(true);
     setOtpModalVisible(true);
-    setTimeout(() => otpInputRef.current?.focus(), 50);
+
+    try {
+      await parentService.sendOtp();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to send OTP. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setSendingOtp(false);
+      setTimeout(() => otpInputRef.current?.focus(), 50);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setSendingOtp(true);
+    try {
+      await parentService.sendOtp();
+      Alert.alert("OTP Sent", "A new code has been sent to your mobile.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to resend OTP. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setSendingOtp(false);
+    }
   };
 
   const handleChooseFaceId = async () => {
@@ -105,43 +154,50 @@ export default function PickupRequest() {
 
     if (!pendingStudentId) return;
 
+    setBiometricLoading(true);
     try {
-      // 1. Check if device supports biometrics
       const hasHardware = await LocalAuthentication.hasHardwareAsync();
       if (!hasHardware) {
-        alert("This device does not support biometric authentication.");
+        Alert.alert(
+          "Error",
+          "This device does not support biometric authentication.",
+        );
         return;
       }
 
-      // 2. Check if biometrics are enrolled (Face ID / Fingerprint)
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
       if (!isEnrolled) {
-        alert(
+        Alert.alert(
+          "Error",
           "No biometric records found. Please set up Face ID or fingerprint.",
         );
         return;
       }
 
-      // 3. Authenticate user
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: "Verify your identity",
-        // fallbackLabel: "Use Passcode",
         disableDeviceFallback: true,
       });
 
-      // 4. Only proceed if success
       if (result.success) {
-        await requestPickup(pendingStudentId);
+        setStudents((prev) =>
+          prev.map((s) =>
+            s.id === pendingStudentId ? { ...s, status: "APPROVED" } : s,
+          ),
+        );
       } else {
-        alert("Authentication failed. Please try again.");
-        return;
+        Alert.alert("Error", "Authentication failed. Please try again.");
       }
-    } catch (error) {
-      console.log(error);
-      alert("Authentication error occurred.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Authentication error occurred.";
+      Alert.alert("Error", msg);
     } finally {
+      setBiometricLoading(false);
       setPendingStudentId(null);
-      setPendingLocation(null);
+      pendingLocationRef.current = null;
     }
   };
 
@@ -149,27 +205,37 @@ export default function PickupRequest() {
     setOtpModalVisible(false);
     setOtp("");
     setPendingStudentId(null);
-    setPendingLocation(null);
+    pendingLocationRef.current = null;
   };
 
   const validateOtp = async () => {
-    if (otp !== "12345") {
-      alert("Invalid OTP. Please try again.");
-      return;
-    }
-
     const studentId = pendingStudentId;
+    if (!studentId) return;
 
-    setOtpModalVisible(false);
-    setOtp("");
+    setVerifyingOtp(true);
+    try {
+      await parentService.verifyOtp(Number(otp));
 
-    if (!studentId) {
-      return;
+      setOtpModalVisible(false);
+      setOtp("");
+
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === studentId ? { ...s, status: "APPROVED" } : s,
+        ),
+      );
+      Alert.alert("Success", "Pickup request submitted successfully.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Invalid OTP. Please try again.";
+      Alert.alert("Error", msg);
+    } finally {
+      setVerifyingOtp(false);
+      setPendingStudentId(null);
+      pendingLocationRef.current = null;
     }
-
-    await requestPickup(studentId);
-    setPendingStudentId(null);
-    setPendingLocation(null);
   };
 
   return (
@@ -185,55 +251,66 @@ export default function PickupRequest() {
       </View>
 
       <View style={styles.screen}>
-        <Table
-          title="Request Pickup"
-          data={students}
-          columns={[
-            {
-              key: "name",
-              title: "NAME",
-              flex: 2.5,
-            },
-            {
-              key: "action",
-              title: "ACTION",
-              flex: 1.5,
-              render: (item: Student) => (
-                <TouchableOpacity
-                  style={styles.actionBtn}
-                  onPress={() => handlePickupPress(item.id)}
-                >
-                  <Text style={styles.actionText}>Pickup</Text>
-                </TouchableOpacity>
-              ),
-            },
-            {
-              key: "status",
-              title: "STATUS",
-              flex: 1,
-              render: (item: Student) => {
-                if (item.status === "APPROVED")
-                  return (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={22}
-                      color="#2E7D32"
-                    />
-                  );
-
-                if (item.status === "REJECTED")
-                  return (
-                    <Ionicons name="close-circle" size={22} color="#D32F2F" />
-                  );
-
-                return <Ionicons name="time-outline" size={22} color="#999" />;
+        {loadingStudents ? (
+          <ActivityIndicator size="large" color="#0E6B3B" />
+        ) : (
+          <Table
+            title="Request Pickup"
+            data={students}
+            columns={[
+              {
+                key: "username",
+                title: "NAME",
+                flex: 2.5,
               },
-            },
-          ]}
-        />
+              {
+                key: "action",
+                title: "ACTION",
+                flex: 1.5,
+                render: (item: StudentRow) => (
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={() => handlePickupPress(item.id)}
+                    disabled={pickupLoadingId === item.id}
+                  >
+                    {pickupLoadingId === item.id ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={styles.actionText}>Pickup</Text>
+                    )}
+                  </TouchableOpacity>
+                ),
+              },
+              {
+                key: "status",
+                title: "STATUS",
+                flex: 1,
+                render: (item: StudentRow) => {
+                  if (item.status === "APPROVED")
+                    return (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={22}
+                        color="#2E7D32"
+                      />
+                    );
+
+                  if (item.status === "REJECTED")
+                    return (
+                      <Ionicons name="close-circle" size={22} color="#D32F2F" />
+                    );
+
+                  return (
+                    <Ionicons name="time-outline" size={22} color="#999" />
+                  );
+                },
+              },
+            ]}
+          />
+        )}
       </View>
 
-      {/* Modal */}
+      {/* Error Modal */}
       <Modal transparent visible={modalVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -251,6 +328,7 @@ export default function PickupRequest() {
         </View>
       </Modal>
 
+      {/* Auth Method Chooser Modal */}
       <Modal transparent visible={chooseAuthVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, styles.chooseModalBox]}>
@@ -284,7 +362,9 @@ export default function PickupRequest() {
                 />
               </View>
               <View style={styles.authCardContent}>
-                <Text style={styles.authCardTitle}>Biometric Authentication</Text>
+                <Text style={styles.authCardTitle}>
+                  Biometric Authentication
+                </Text>
                 <Text style={styles.authCardSubtitle}>
                   Quick facial/fingerprint verification.
                 </Text>
@@ -300,7 +380,7 @@ export default function PickupRequest() {
               onPress={() => {
                 setChooseAuthVisible(false);
                 setPendingStudentId(null);
-                setPendingLocation(null);
+                pendingLocationRef.current = null;
               }}
             >
               <Text style={styles.modalCancelText}>Cancel</Text>
@@ -309,6 +389,7 @@ export default function PickupRequest() {
         </View>
       </Modal>
 
+      {/* OTP Modal */}
       <Modal transparent visible={otpModalVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -344,31 +425,38 @@ export default function PickupRequest() {
             />
 
             <Text style={styles.resendRow}>
-              Didn’t get the code?{" "}
-              <Text
-                style={styles.resendLink}
-                onPress={() => {
-                  setOtp("");
-                  alert("Code resent. Please check your SMS.");
-                }}
-              >
-                Click to resend
-              </Text>
+              Didn't get the code?{" "}
+              {sendingOtp ? (
+                <ActivityIndicator size="small" color="#0E6B3B" />
+              ) : (
+                <Text style={styles.resendLink} onPress={handleResendOtp}>
+                  Click to resend
+                </Text>
+              )}
             </Text>
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalCancelButton}
                 onPress={closeOtpModal}
+                disabled={verifyingOtp}
               >
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.modalConfirmButton}
+                style={[
+                  styles.modalConfirmButton,
+                  !otp && styles.modalConfirmButtonDisabled,
+                ]}
                 onPress={validateOtp}
+                disabled={!otp || verifyingOtp}
               >
-                <Text style={styles.modalConfirmText}>Confirm</Text>
+                {verifyingOtp ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Text style={styles.modalConfirmText}>Confirm</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -404,6 +492,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 8,
+    minWidth: 70,
+    alignItems: "center",
   },
 
   actionText: {
@@ -470,6 +560,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingVertical: 12,
     borderRadius: 10,
+    minWidth: 90,
+    alignItems: "center",
+  },
+  modalConfirmButtonDisabled: {
+    opacity: 0.5,
   },
   modalConfirmText: {
     color: "#fff",

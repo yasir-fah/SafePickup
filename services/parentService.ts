@@ -18,7 +18,29 @@ export interface CongestionDto {
   status: string;
 }
 
+export interface PickupRequestDto {
+  parentLat: number;
+  parentLon: number;
+}
+
 export const parentService = {
+  async pickupRequest(
+    studentId: number,
+    body: PickupRequestDto
+  ): Promise<void> {
+    await apiClient.post(
+      `/api/v1/parent/exit/request/student/${studentId}`,
+      body
+    );
+  },
+
+  async sendOtp(): Promise<void> {
+    await apiClient.post("/api/v1/parent/send-otp");
+  },
+
+  async verifyOtp(otp: number): Promise<void> {
+    await apiClient.post(`/api/v1/parent/verify-otp/${otp}`);
+  },
   async getAttendanceLogs(): Promise<AttendanceLogDto[]> {
     const { data } = await apiClient.get<AttendanceLogDto[]>(
       "/api/v1/exitlog/get/my-logs"
